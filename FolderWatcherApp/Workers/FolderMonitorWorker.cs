@@ -17,7 +17,7 @@ namespace FolderWatcherApp.Workers
             Configuration = configuration;
         }
 
-        public void Start()
+        public void Start(bool errorCause = false)
         {
             foreach (FolderItemConfiguration item in Configuration.Folders)
             {
@@ -30,6 +30,7 @@ namespace FolderWatcherApp.Workers
                 watcher.Deleted += WatcherPulse;
                 watcher.Changed += WatcherPulse;
                 watcher.Renamed += WatcherPulse;
+                watcher.Error += ErrorPulse;
 
                 watcher.EnableRaisingEvents = true;
 
@@ -37,6 +38,11 @@ namespace FolderWatcherApp.Workers
             }
         }
         private void WatcherPulse(object sender, System.IO.FileSystemEventArgs e)
+        {
+            Log(sender, e.ChangeType.ToString() + " - " + e.FullPath);
+        }
+
+        private void Log(object sender, string text)
         {
             System.IO.FileSystemWatcher watcher = (System.IO.FileSystemWatcher)sender;
 
@@ -49,14 +55,82 @@ namespace FolderWatcherApp.Workers
                 if (watch.Key == item.GetHashCode())
                 {
                     string logFile = TransformValues(item.Log);
-                    string contentLog = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + " $ " + e.ChangeType.ToString() + " - " + e.FullPath + Environment.NewLine;
+                    string contentLog = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + " $ " + text + Environment.NewLine;
                     System.IO.File.AppendAllText(logFile, contentLog);
                     Console.Write(contentLog);
                 }
-            }   
-            
+            }
         }
 
+        private void ErrorPulse(object sender, System.IO.ErrorEventArgs e)
+        {
+            System.IO.FileSystemWatcher watcher = ((System.IO.FileSystemWatcher)sender);
+
+            KeyValuePair<int, System.IO.FileSystemWatcher> watch = runners.Where(q => q.Value == watcher).FirstOrDefault();
+
+            foreach (FolderItemConfiguration item in Configuration.Folders)
+            {
+                if (watch.Key == item.GetHashCode())
+                {
+                    int iMaxAttempts = 120;
+                    int iTimeOut = 30000;
+                    int i = 0;
+                    while ((!System.IO.Directory.Exists(watcher.Path) || watcher.EnableRaisingEvents == false) && i < iMaxAttempts)
+                    {
+                        i += 1;
+                        try
+                        {
+                            watcher.EnableRaisingEvents = false;
+                            if (!System.IO.Directory.Exists(watcher.Path))
+                            {
+                                Log(sender, "Directory Inaccesible " + watcher.Path + " at " + DateTime.Now.ToString("HH:mm:ss"));
+                                System.Threading.Thread.Sleep(iTimeOut);
+                            }
+                            else
+                            {
+                                // ReInitialize the Component
+                                watcher.Dispose();
+                                watcher = null;
+                                watcher = new System.IO.FileSystemWatcher();
+                                ((System.ComponentModel.ISupportInitialize)(watcher)).BeginInit();
+                                watcher.Path = item.Path;
+                                watcher.Filter = item.Filter;
+                                watcher.IncludeSubdirectories = item.Recursive;
+                                watcher.Created += WatcherPulse;
+                                watcher.Deleted += WatcherPulse;
+                                watcher.Changed += WatcherPulse;
+                                watcher.Renamed += WatcherPulse;
+                                watcher.Error += ErrorPulse;
+                                watcher.EnableRaisingEvents = true;
+                                ((System.ComponentModel.ISupportInitialize)(watcher)).EndInit();
+                                Log(sender, "Try to Restart RaisingEvents Watcher at " + DateTime.Now.ToString("HH:mm:ss"));
+                                runners[item.GetHashCode()] = watcher;
+                            }
+                        }
+                        catch (Exception error)
+                        {
+                            if (sender != null)
+                                Log(sender, "Error trying Restart Service " + error.StackTrace + " at " + DateTime.Now.ToString("HH:mm:ss"));
+                            else
+                                Log(watcher, "Error trying Restart Service " + error.StackTrace + " at " + DateTime.Now.ToString("HH:mm:ss"));
+
+                            watcher.EnableRaisingEvents = false;
+                            System.Threading.Thread.Sleep(iTimeOut);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void Stop()
+        {
+            foreach (var item in runners)
+            {
+                if (item.Value != null)
+                    item.Value.Dispose();
+            }
+        }
         public string TransformValues(string input, string type = "", bool sleepTime = false)
         {
             if (string.IsNullOrWhiteSpace(input)) return input;
@@ -86,15 +160,6 @@ namespace FolderWatcherApp.Workers
             ret = ret.Replace("{?}", type);
 
             return ret;
-        }
-
-        public void Stop()
-        {
-            foreach (var item in runners)
-            {
-                if(item.Value != null)
-                    item.Value.Dispose();
-            }
         }
     }
 }
