@@ -16,7 +16,7 @@ namespace FolderWatcherApp.Configuration.Folder
 
         public override int GetHashCode()
         {
-            return Path.GetHashCode();
+            return (Path + Log + Filter + Recursive.ToString()).GetHashCode();
         }
     }
 }
