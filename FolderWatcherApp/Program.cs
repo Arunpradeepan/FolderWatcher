@@ -30,25 +30,33 @@ namespace FolderWatcherApp
 
             config.OnConfigChanged((path, action) =>
             {
-                Console.WriteLine(action.ToString() + "> " + path);
-
-                switch (action)
+                try
                 {
-                    case System.IO.WatcherChangeTypes.Created:
-                        folder.AddToMonitor(FolderConfiguration.Deserialize(path));
-                        break;
-                    case System.IO.WatcherChangeTypes.Deleted:
-                        folder.RemoveMonitor(path);
-                        break;
-                    case System.IO.WatcherChangeTypes.Changed:
-                        folder.ChangeMonitor(path);
-                        break;
-                    case System.IO.WatcherChangeTypes.Renamed:
-                        break;
-                    case System.IO.WatcherChangeTypes.All:
-                        break;
-                    default:
-                        break;
+                    Console.WriteLine(action.ToString() + "> " + path);
+
+                    switch (action)
+                    {
+                        case System.IO.WatcherChangeTypes.Created:
+                            folder.AddToMonitor(FolderConfiguration.Deserialize(path));
+                            break;
+                        case System.IO.WatcherChangeTypes.Deleted:
+                            folder.RemoveMonitor(path);
+                            break;
+                        case System.IO.WatcherChangeTypes.Changed:
+                            folder.ChangeMonitor(path);
+                            break;
+                        case System.IO.WatcherChangeTypes.Renamed:
+                            break;
+                        case System.IO.WatcherChangeTypes.All:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string contentLog = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + " $ " + ex.Message + Environment.NewLine;
+                    System.IO.File.AppendAllText("Log" + DateTime.Now.ToString("yyyy/MM/dd") + ".txt", contentLog);
                 }
             });
 

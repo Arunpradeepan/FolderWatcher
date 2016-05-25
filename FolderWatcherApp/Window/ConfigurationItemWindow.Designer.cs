@@ -119,7 +119,7 @@
             this.Controls.Add(this.txtTitle);
             this.Controls.Add(this.chkEnabled);
             this.Name = "ConfigurationItemWindow";
-            this.Text = "ConfigurationItemWindow";
+            this.Text = "Folder Watcher  - Configuration";
             this.Load += new System.EventHandler(this.ConfigurationItemWindow_Load);
             ((System.ComponentModel.ISupportInitialize)(this.grdFolders)).EndInit();
             this.ResumeLayout(false);

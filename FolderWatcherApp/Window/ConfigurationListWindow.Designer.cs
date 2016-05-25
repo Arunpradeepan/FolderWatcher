@@ -60,26 +60,26 @@
             this.mnuEdit,
             this.mnuDelete});
             this.ctxMenu.Name = "ctxMenu";
-            this.ctxMenu.Size = new System.Drawing.Size(153, 92);
+            this.ctxMenu.Size = new System.Drawing.Size(109, 70);
             // 
             // mnuCreate
             // 
             this.mnuCreate.Name = "mnuCreate";
-            this.mnuCreate.Size = new System.Drawing.Size(152, 22);
+            this.mnuCreate.Size = new System.Drawing.Size(108, 22);
             this.mnuCreate.Text = "Create";
             this.mnuCreate.Click += new System.EventHandler(this.mnuCreate_Click);
             // 
             // mnuEdit
             // 
             this.mnuEdit.Name = "mnuEdit";
-            this.mnuEdit.Size = new System.Drawing.Size(152, 22);
+            this.mnuEdit.Size = new System.Drawing.Size(108, 22);
             this.mnuEdit.Text = "Edit";
             this.mnuEdit.Click += new System.EventHandler(this.mnuEdit_Click);
             // 
             // mnuDelete
             // 
             this.mnuDelete.Name = "mnuDelete";
-            this.mnuDelete.Size = new System.Drawing.Size(152, 22);
+            this.mnuDelete.Size = new System.Drawing.Size(108, 22);
             this.mnuDelete.Text = "Delete";
             this.mnuDelete.Click += new System.EventHandler(this.mnuDelete_Click);
             // 
@@ -90,7 +90,7 @@
             this.ClientSize = new System.Drawing.Size(631, 408);
             this.Controls.Add(this.grdConfigurations);
             this.Name = "ConfigurationListWindow";
-            this.Text = "ConfigurationListWindow";
+            this.Text = "Folder Watcher  - List";
             this.Load += new System.EventHandler(this.ConfigurationListWindow_Load);
             ((System.ComponentModel.ISupportInitialize)(this.grdConfigurations)).EndInit();
             this.ctxMenu.ResumeLayout(false);
